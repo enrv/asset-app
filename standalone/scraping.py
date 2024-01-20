@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 import pandas_datareader.data as web
 import yfinance as yf
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 def fetch_companies() -> List[Dict[str, str]]:
     url = "https://sistemaswebb3-listados.b3.com.br/indexPage/day/IBOV?language=pt-br"
@@ -22,7 +22,7 @@ def fetch_companies() -> List[Dict[str, str]]:
 
         next_page = driver.find_element(By.CLASS_NAME, "pagination-next")
         check = next_page.get_attribute("outerHTML")
-        if "disabled" in check:
+        if check is None or "disabled" in check:
             break # last page
 
         next_page.click()
@@ -34,7 +34,7 @@ def fetch_companies() -> List[Dict[str, str]]:
 
     return companies
 
-def get_historical_prices(company_code: str, from_date: datetime = None) -> pd.Series:
+def get_historical_prices(company_code: str, from_date: Optional[datetime] = None) -> pd.Series:
     yf.pdr_override() # avoid TypeError: string indices must be integers
     return web.get_data_yahoo(company_code, start=from_date)["Adj Close"]
 
