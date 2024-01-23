@@ -5,9 +5,6 @@ companies = fetch_companies()
 for company in companies:
     company["prices"] = get_historical_prices(company["code"])
 
-for company in companies:
-    print(company["prices"].iloc[-1])
-
 config = {
     "user": "root",
     "password": "Database10!",

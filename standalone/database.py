@@ -55,7 +55,7 @@ class Database:
         self.cursor.execute("""
             CREATE TABLE prices_time_series (
                 price_date DATE NOT NULL,
-                price_value DECIMAL(10, 6) NOT NULL,
+                price_value DECIMAL(65, 6) NOT NULL,
                 asset_id INT NOT NULL,
                 FOREIGN KEY (asset_id) REFERENCES assets(asset_id),
                 UNIQUE (price_date, asset_id)
