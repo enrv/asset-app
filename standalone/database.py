@@ -1,6 +1,14 @@
 from mysql.connector import connect
 from mysql.connector.connection import MySQLConnection
+from mysql.connector.errors import IntegrityError
 from typing import Any
+
+class DatabaseConnectionException(Exception): pass
+class DuplicatePriceEntryException(Exception): pass
+class MissingAssetException(Exception): pass
+class DuplicateManagerException(Exception): pass
+class DuplicateClientException(Exception): pass
+class UnregisteredClientException(Exception): pass
 
 class Database:
     def __init__(self, user: str, password: str, host: str, database: str):
@@ -20,7 +28,7 @@ class Database:
             except:
                 attempts += 1
         else:
-            raise Exception("Could not connect to database")
+            raise DatabaseConnectionException("Could not connect to database")
         
     def __enter__(self):
         self.cursor.execute(f"USE {self.database}")
@@ -86,6 +94,94 @@ class Database:
                 FOREIGN KEY (cash_client) REFERENCES clients(user_id)
             );
         """)
+
+    def insert_company(self, name: str, code: str) -> None:
+        try:
+            self.cursor.execute(f"INSERT INTO assets (asset_name, asset_code) VALUES ('{name}', '{code}');")
+        except IntegrityError:
+            pass # company already exists
+
+    def insert_price(self, date: str, value: float, code: str) -> None:
+        try:
+            self.cursor.execute(f"""
+                INSERT INTO prices_time_series (price_date, price_value, asset_id) VALUES (
+                    "{date}",
+                    {value},
+                    (SELECT asset_id FROM assets WHERE asset_code="{code}")
+                );
+            """)
+        except IntegrityError as e:
+            if e.errno == 1048:
+                raise MissingAssetException(f"Asset with code {code} does not exist")
+            elif e.errno == 1062:
+                raise DuplicatePriceEntryException(f"Price for asset {code} on {date} already exists")
+        
+    def insert_manager(self, first_name: str, last_name: str, email: str, password: str, zip_code: str) -> None:
+        try:
+            self.cursor.execute(f"""
+                INSERT INTO managers (first_name, last_name, email, user_password, zip) VALUES (
+                    "{first_name}",
+                    "{last_name}",
+                    "{email}",
+                    "{password}",
+                    "{zip_code}"
+                );
+            """)
+        except IntegrityError as e:
+            if e.errno == 1062:
+                raise DuplicateManagerException(f"Manager with email {email} already exists")
+            
+    def insert_client(self, first_name: str, last_name: str, email: str, password: str, zip_code: str) -> None:
+        try:
+            self.cursor.execute(f"""
+                INSERT INTO clients (first_name, last_name, email, user_password, zip) VALUES (
+                    "{first_name}",
+                    "{last_name}",
+                    "{email}",
+                    "{password}",
+                    "{zip_code}"
+                );
+            """)
+        except IntegrityError as e:
+            if e.errno == 1062:
+                raise DuplicateClientException(f"Client with email {email} already exists")
+            
+    def update_client_position(self, date: str, code: str, value: float, email: str) -> None:
+        try:
+            self.cursor.execute(f"""
+                INSERT INTO portfolio_positions (position_date, position_asset, position_value, position_client) VALUES (
+                    "{date}",
+                    (SELECT asset_id FROM assets WHERE asset_code="{code}"),
+                    {value},
+                    (SELECT user_id FROM clients WHERE email="{email}")
+                ) ON DUPLICATE KEY UPDATE position_value={value};
+            """)
+        except IntegrityError as e:
+            if e.errno == 1048 and type(e.msg) == str and "position_asset" in e.msg:
+                raise MissingAssetException(f"Asset with code {code} does not exist")
+            elif e.errno == 1048:
+                raise UnregisteredClientException(f"Client with email {email} does not exist")
+
+    def update_client_cash(self, client_email: str, cash_value: float) -> None:
+        try:
+            self.cursor.execute(f"""
+                INSERT INTO cash_positions (cash_value, cash_client) VALUES (
+                    {cash_value},
+                    (SELECT user_id FROM clients WHERE email="{client_email}")
+                ) ON DUPLICATE KEY UPDATE cash_value={cash_value};
+            """)
+        except IntegrityError as e:
+            if e.errno == 1048:
+                raise UnregisteredClientException(f"Client with email {client_email} does not exist")
+
+    def get_last_price_insertion_date(self, code: str) -> str:
+        self.cursor.execute(f"SELECT MAX(price_date) FROM prices_time_series WHERE asset_id=(SELECT asset_id FROM assets WHERE asset_code=\"{code}\");")
+        result = self.cursor.fetchone()
+
+        if result is None or result[0] is None:
+            raise MissingAssetException(f"Asset with code {code} does not exist")
+        
+        return result[0]
 
     def insert_mockery_companies(self) -> None:
         self.cursor.execute("INSERT INTO assets (asset_name, asset_code) VALUES ('PETROBRAS', 'PETR4.SA');")
@@ -256,7 +352,7 @@ if __name__ == "__main__":
         db.insert_mockery_positions()
         db.insert_mockery_cash()
 
-        db.cursor.execute("SELECT * FROM portfolio_positions")
+        """db.cursor.execute("SELECT * FROM portfolio_positions")
         for row in db.cursor.fetchall():
             print(row)
 
@@ -270,4 +366,4 @@ if __name__ == "__main__":
 
         db.cursor.execute("SELECT * FROM assets")
         for row in db.cursor.fetchall():
-            print(row)
+            print(row)"""
