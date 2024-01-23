@@ -115,6 +115,10 @@ class Database:
                 raise MissingAssetException(f"Asset with code {code} does not exist")
             elif e.errno == 1062:
                 raise DuplicatePriceEntryException(f"Price for asset {code} on {date} already exists")
+            else:
+                print(f"Could not insert price for asset {code} on {date} with value {value}")
+        except:
+            print(f"Could not insert price for asset {code} on {date} with value {value}")
         
     def insert_manager(self, first_name: str, last_name: str, email: str, password: str, zip_code: str) -> None:
         try:
