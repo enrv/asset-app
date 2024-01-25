@@ -90,5 +90,67 @@ def register():
         except Exception as e:
             return {"message": str(e)}, 400
 
+@app.route("/api/get-clients", methods=["GET"])
+@jwt_required()
+# curl -i X GET -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjIyMDg0OCwianRpIjoiZDhiMzBjYWItYzU4NC00YjQxLTk0N2EtOGRjZTVmODBjYmEzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2MjIwODQ4LCJjc3JmIjoiZmQyMzFiNDQtYzdjMC00NzIwLWJmMzctMmE5MTAxMjliMjA1IiwiZXhwIjoxNzA2MjIxNzQ4fQ.nsZ9AQD14p65pEJhQ-BF8IYFKgRcac77RbdcgmEgwUI" http://localhost:5000/api/get-clients
+def get_clients():
+    manager_email = get_jwt_identity()
+    
+    with Database(**config) as db:
+        try:
+            if not db.does_manager_exist(manager_email):
+                return {"message": "You are not a manager!"}, 403
+            clients = db.get_all_clients()
+            return {"clients": clients}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
+@app.route("/api/get-client-cash", methods=["GET"])
+@jwt_required()
+# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjIyMDg0OCwianRpIjoiZDhiMzBjYWItYzU4NC00YjQxLTk0N2EtOGRjZTVmODBjYmEzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2MjIwODQ4LCJjc3JmIjoiZmQyMzFiNDQtYzdjMC00NzIwLWJmMzctMmE5MTAxMjliMjA1IiwiZXhwIjoxNzA2MjIxNzQ4fQ.nsZ9AQD14p65pEJhQ-BF8IYFKgRcac77RbdcgmEgwUI"
+def get_client_cash():
+    manager_email = get_jwt_identity()
+    client_email = request.args.get("email")
+
+    if client_email is None:
+        return {"message": "Missing parameters!"}, 400
+    
+    with Database(**config) as db:
+        try:
+            if not db.does_manager_exist(manager_email):
+                return {"message": "You are not a manager!"}, 403
+            
+            if not db.does_client_exist(client_email):
+                return {"message": "Client not found!"}, 400
+
+            cash = db.get_client_cash(client_email)
+            return {"cash": cash}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
+@app.route("/api/update-client-cash", methods=["POST"])
+@jwt_required()
+# curl -i X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjIyMDg0OCwianRpIjoiZDhiMzBjYWItYzU4NC00YjQxLTk0N2EtOGRjZTVmODBjYmEzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2MjIwODQ4LCJjc3JmIjoiZmQyMzFiNDQtYzdjMC00NzIwLWJmMzctMmE5MTAxMjliMjA1IiwiZXhwIjoxNzA2MjIxNzQ4fQ.nsZ9AQD14p65pEJhQ-BF8IYFKgRcac77RbdcgmEgwUI" -d '{"email":"joao.silva@gmail.com","cash":50.25}' http://localhost:5000/api/update-client-cash
+def update_client_cash():
+    manager_email = get_jwt_identity()
+    client_email = request.json.get("email")
+    cash = request.json.get("cash")
+
+    if client_email is None or cash is None:
+        return {"message": "Missing parameters!"}, 400
+    
+    with Database(**config) as db:
+        try:
+            if not db.does_manager_exist(manager_email):
+                return {"message": "You are not a manager!"}, 403
+            
+            if not db.does_client_exist(client_email):
+                return {"message": "Client not found!"}, 400
+
+            db.update_client_cash(client_email, cash)
+            return {"message": "Cash updated successfully!"}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
 if __name__ == "__main__":
     app.run()

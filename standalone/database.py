@@ -214,6 +214,37 @@ class Database:
 
         return result[0], result[1]
 
+    def does_manager_exist(self, email: str) -> bool:
+        self.cursor.execute(f"SELECT user_id FROM managers WHERE email=\"{email}\";")
+        result = self.cursor.fetchone()
+        return result is not None and result[0] is not None
+    
+    def does_client_exist(self, email: str) -> bool:
+        self.cursor.execute(f"SELECT user_id FROM clients WHERE email=\"{email}\";")
+        result = self.cursor.fetchone()
+        return result is not None and result[0] is not None
+    
+    def get_client_cash(self, email: str) -> float:
+        self.cursor.execute(f"SELECT cash_value FROM cash_positions WHERE cash_client=(SELECT user_id FROM clients WHERE email=\"{email}\");")
+        result = self.cursor.fetchone()
+
+        if result is None or result[0] is None:
+            return 0.0
+
+        return result[0]
+
+    def get_all_clients(self) -> list[dict[str, Any]]:
+        self.cursor.execute("SELECT * FROM clients;")
+        rows = self.cursor.fetchall()
+        names = list(self.cursor.column_names)
+
+        # don't show password
+        i = names.index("user_password")
+        names.pop(i)
+        all_but = lambda row, i: row[:i] + row[i+1:]
+
+        return [dict(zip(names, all_but(list(row), i))) for row in rows]
+
     def insert_mockery_companies(self) -> None:
         self.cursor.execute("INSERT INTO assets (asset_name, asset_code) VALUES ('PETROBRAS', 'PETR4.SA');")
         self.cursor.execute("INSERT INTO assets (asset_name, asset_code) VALUES ('ITAUSA', 'ITSA4.SA')")
