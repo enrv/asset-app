@@ -1,7 +1,8 @@
 from mysql.connector import connect
 from mysql.connector.connection import MySQLConnection
 from mysql.connector.errors import IntegrityError
-from typing import Any
+from typing import Any, Tuple
+import re
 
 class DatabaseConnectionException(Exception): pass
 class DuplicatePriceEntryException(Exception): pass
@@ -9,6 +10,8 @@ class MissingAssetException(Exception): pass
 class DuplicateManagerException(Exception): pass
 class DuplicateClientException(Exception): pass
 class UnregisteredClientException(Exception): pass
+class UnregisteredUserOrWrongPasswordException(Exception): pass
+class InvalidZipCodeException(Exception): pass
 
 class Database:
     def __init__(self, user: str, password: str, host: str, database: str):
@@ -121,6 +124,9 @@ class Database:
             print(f"Could not insert price for asset {code} on {date} with value {value}")
         
     def insert_manager(self, first_name: str, last_name: str, email: str, password: str, zip_code: str) -> None:
+        if not re.match(r"^\d{8}$", zip_code):
+            raise InvalidZipCodeException(f"Zip code {zip_code} is invalid")
+
         try:
             self.cursor.execute(f"""
                 INSERT INTO managers (first_name, last_name, email, user_password, zip) VALUES (
@@ -136,6 +142,9 @@ class Database:
                 raise DuplicateManagerException(f"Manager with email {email} already exists")
             
     def insert_client(self, first_name: str, last_name: str, email: str, password: str, zip_code: str) -> None:
+        if not re.match(r"^\d{8}$", zip_code):
+            raise InvalidZipCodeException(f"Zip code {zip_code} is invalid")
+
         try:
             self.cursor.execute(f"""
                 INSERT INTO clients (first_name, last_name, email, user_password, zip) VALUES (
@@ -186,6 +195,24 @@ class Database:
             raise MissingAssetException(f"Asset with code {code} does not exist")
         
         return result[0]
+
+    def find_manager(self, email: str, password: str) -> Tuple[str, str]:
+        self.cursor.execute(f"SELECT first_name, last_name FROM managers WHERE email=\"{email}\" AND user_password=\"{password}\";")
+        result = self.cursor.fetchone()
+
+        if result is None or result[0] is None:
+            raise UnregisteredUserOrWrongPasswordException(f"Manager with email {email} does not exist or wrong password")
+
+        return result[0], result[1]
+    
+    def find_client(self, email: str, password: str) -> Tuple[str, str]:
+        self.cursor.execute(f"SELECT first_name, last_name FROM clients WHERE email=\"{email}\" AND user_password=\"{password}\";")
+        result = self.cursor.fetchone()
+
+        if result is None or result[0] is None:
+            raise UnregisteredUserOrWrongPasswordException(f"Client with email {email} does not exist or wrong password")
+
+        return result[0], result[1]
 
     def insert_mockery_companies(self) -> None:
         self.cursor.execute("INSERT INTO assets (asset_name, asset_code) VALUES ('PETROBRAS', 'PETR4.SA');")
