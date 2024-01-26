@@ -5,7 +5,9 @@ from hashlib import sha256
 from flask import request
 import os
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
-from datetime import timedelta
+from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 
@@ -123,8 +125,8 @@ def get_client_cash():
     
     with Database(**config) as db:
         try:
-            if not db.does_manager_exist(manager_email):
-                return {"message": "You are not a manager!"}, 403
+            if not db.does_manager_exist(manager_email) and manager_email != client_email:
+                return {"message": "You are not a manager to see other cllients' cash!"}, 403
             
             if not db.does_client_exist(client_email):
                 return {"message": "Client not found!"}, 400
@@ -224,6 +226,127 @@ def update_company_history():
             return {"message": str(e)}, 400
 
 #### CLIENT FUNCTIONS
+
+@app.route("/api/buy-stocks", methods=["POST"])
+@jwt_required()
+# curl -i -X POST -H "Content-Type: application/json" http://localhost:5000/api/update-company-list
+# curl -i -X POST -H "Content-Type: application/json" http://localhost:5000/api/update-company-history
+# curl -i -X POST -H "Content-Type: application/json" -d '{"email":"josesousa1920@yahoo.com","password":"qadsklsad jkasd", "kindofuser": "manager"}' http://localhost:5000/api/login
+# curl -i X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzAxNywianRpIjoiNGFmNjVlMDYtNzE4Ny00OWQwLTgyYWQtMGMxODFmMDMxOTZjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2Mjk3MDE3LCJjc3JmIjoiYzNmNjI2OTEtOWIyOC00NGQ5LWE5Y2YtZWI2MjJkM2IwYmY5IiwiZXhwIjoxNzA2Mjk3OTE3fQ.8WcqKygJDGn9UE1y0kCjg3vzg1umBdVf3gLsTGNpsic" -d '{"email":"joao.silva@gmail.com","cash":50.25}' http://localhost:5000/api/update-client-cash
+# curl -i -X POST -H "Content-Type: application/json" -d '{"email":"joao.silva@gmail.com","password":"qads", "kindofuser": "client"}' http://localhost:5000/api/login
+# curl -i -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8" -d '{"code":"PETR4.SA","quantity":0.5}' http://localhost:5000/api/buy-stocks
+# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8"
+# curl -i -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8" -d '{"code":"PETR4.SA","quantity":0.2}' http://localhost:5000/api/sell-stocks
+# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8"
+def buy_stocks():
+    client_email = get_jwt_identity()
+    company_code = request.json.get("code")
+    quantity = request.json.get("quantity")
+
+    if company_code is None or quantity is None:
+        return {"message": "Missing parameters!"}, 400
+    
+    with Database(**config) as db:
+        try:
+            if not db.does_client_exist(client_email):
+                return {"message": "Client not found!"}, 400
+
+            if not db.does_company_exist(company_code):
+                return {"message": "Company not found!"}, 400
+            
+            current_price = db.get_last_price(company_code)
+            cash_required = float(current_price) * float(quantity)
+
+            current_position = float(db.get_client_position(company_code, client_email))
+            current_cash = float(db.get_client_cash(client_email))
+
+            if cash_required > current_cash:
+                return {"message": "Not enough cash!"}, 400
+            
+            db.update_client_position(datetime.now().strftime("%Y-%m-%d"), company_code, current_position + quantity, client_email)
+            db.update_client_cash(client_email, current_cash - cash_required)
+
+            return {"message": "Stocks bought successfully!"}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
+@app.route("/api/sell-stocks", methods=["POST"])
+@jwt_required()
+def sell_stocks():
+    client_email = get_jwt_identity()
+    company_code = request.json.get("code")
+    quantity = request.json.get("quantity")
+
+    if company_code is None or quantity is None:
+        return {"message": "Missing parameters!"}, 400
+    
+    with Database(**config) as db:
+        try:
+            if not db.does_client_exist(client_email):
+                return {"message": "Client not found!"}, 400
+
+            if not db.does_company_exist(company_code):
+                return {"message": "Company not found!"}, 400
+            
+            current_price = db.get_last_price(company_code)
+            cash_obtained = float(current_price) * float(quantity)
+
+            current_position = float(db.get_client_position(company_code, client_email))
+            current_cash = float(db.get_client_cash(client_email))
+
+            db.update_client_position(datetime.now().strftime("%Y-%m-%d"), company_code, current_position - quantity, client_email)
+            db.update_client_cash(client_email, current_cash + cash_obtained)
+
+            return {"message": "Stocks sold successfully!"}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
+@app.route("/api/get-client-position", methods=["GET"])
+# curl -i X GET "http://localhost:5000/api/get-client-position" -H "Content-Type: application/json"
+def get_client_position():
+    client_email = "joao.silva@gmail.com"
+    with Database(**config) as db:
+        try:
+            if not db.does_client_exist(client_email):
+                return {"message": "Client not found!"}, 400
+
+            positions = db.get_client_position_history(client_email)
+
+            companies_history = {}
+            for company, _ in positions.items():
+                companies_history[company] = db.get_company_history(company)
+
+            position_series = [pd.Series(data=position.values(), index=pd.PeriodIndex(position.keys(), freq="d")) for _, position in positions.items()]
+            companies_history_series = [pd.Series(data=history.values(), index=pd.PeriodIndex(history.keys(), freq="d")) for _, history in companies_history.items()]
+
+            # today's date if not present
+            today = datetime.now().strftime("%Y-%m-%d")
+            for series in position_series:
+                if today not in series.index:
+                    series[today] = np.nan
+            for series in companies_history_series:
+                if today not in series.index:
+                    series[today] = np.nan
+
+            # fill missing days with NaN
+            position_series = [series.to_timestamp().asfreq("d") for series in position_series]
+            companies_history_series = [series.to_timestamp().asfreq("d") for series in companies_history_series]
+
+            # replace NaN with last known value
+            position_series = [series.ffill().bfill() for series in position_series]
+            companies_history_series = [series.ffill().bfill() for series in companies_history_series]
+
+            values_series = [series.mul(companies_history_series[i]).dropna() for i, series in enumerate(position_series)]
+            values_dict = []
+            for series in values_series:
+                series_dict = {}
+                for series_date, series_values in series.items():
+                    series_dict[series_date.strftime("%Y-%m-%d")] = series_values
+                values_dict.append(series_dict)
+
+            return dict(zip(positions.keys(), values_dict))
+        except Exception as e:
+            return {"message": str(e)}, 400
 
 if __name__ == "__main__":
     app.run()

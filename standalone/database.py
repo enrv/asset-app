@@ -158,7 +158,27 @@ class Database:
         except IntegrityError as e:
             if e.errno == 1062:
                 raise DuplicateClientException(f"Client with email {email} already exists")
-            
+
+    def get_client_position(self, code: str, email: str) -> float:
+        try:
+            self.cursor.execute(f"""
+                SELECT position_value FROM portfolio_positions
+                    WHERE position_asset=(SELECT asset_id FROM assets WHERE asset_code="{code}")
+                    AND position_client=(SELECT user_id FROM clients WHERE email="{email}")
+                    ORDER BY position_date DESC LIMIT 1;
+            """)
+            result = self.cursor.fetchone()
+
+            if result is None or result[0] is None:
+                return 0.0
+
+            return result[0]
+        except IntegrityError as e:
+            if e.errno == 1048 and type(e.msg) == str and "position_asset" in e.msg:
+                raise MissingAssetException(f"Asset with code {code} does not exist")
+            elif e.errno == 1048:
+                raise UnregisteredClientException(f"Client with email {email} does not exist")
+
     def update_client_position(self, date: str, code: str, value: float, email: str) -> None:
         try:
             self.cursor.execute(f"""
@@ -175,6 +195,15 @@ class Database:
             elif e.errno == 1048:
                 raise UnregisteredClientException(f"Client with email {email} does not exist")
 
+    def get_client_cash(self, email: str) -> float:
+        self.cursor.execute(f"SELECT cash_value FROM cash_positions WHERE cash_client=(SELECT user_id FROM clients WHERE email=\"{email}\");")
+        result = self.cursor.fetchone()
+
+        if result is None or result[0] is None:
+            return 0.0
+
+        return result[0]
+
     def update_client_cash(self, client_email: str, cash_value: float) -> None:
         try:
             self.cursor.execute(f"""
@@ -186,6 +215,11 @@ class Database:
         except IntegrityError as e:
             if e.errno == 1048:
                 raise UnregisteredClientException(f"Client with email {client_email} does not exist")
+
+    def get_last_price(self, code: str) -> float:
+        self.cursor.execute(f"SELECT price_value FROM prices_time_series WHERE asset_id=(SELECT asset_id FROM assets WHERE asset_code=\"{code}\") ORDER BY price_date DESC LIMIT 1;")
+        result = self.cursor.fetchone()
+        return result[0] if result is not None else 0.0
 
     def get_last_price_insertion_date(self, code: str) -> str:
         self.cursor.execute(f"SELECT MAX(price_date) FROM prices_time_series WHERE asset_id=(SELECT asset_id FROM assets WHERE asset_code=\"{code}\");")
@@ -224,15 +258,6 @@ class Database:
         result = self.cursor.fetchone()
         return result is not None and result[0] is not None
 
-    def get_client_cash(self, email: str) -> float:
-        self.cursor.execute(f"SELECT cash_value FROM cash_positions WHERE cash_client=(SELECT user_id FROM clients WHERE email=\"{email}\");")
-        result = self.cursor.fetchone()
-
-        if result is None or result[0] is None:
-            return 0.0
-
-        return result[0]
-
     def get_all_clients(self) -> list[dict[str, Any]]:
         self.cursor.execute("SELECT * FROM clients;")
         rows = self.cursor.fetchall()
@@ -252,10 +277,26 @@ class Database:
 
         return [dict(zip(names, row)) for row in rows]
 
-    def get_company_history(self, code: str) -> list[dict[str, float]]:
+    def get_company_history(self, code: str) -> dict[str, float]:
         self.cursor.execute(f"SELECT * FROM prices_time_series WHERE asset_id=(SELECT asset_id FROM assets WHERE asset_code=\"{code}\");")
         results = self.cursor.fetchall()
-        return [{"date": str(date), "price": float(value)} for date, value, _ in results]
+        return {str(date): float(value) for date, value, _ in results}
+
+    def get_client_position_history(self, email: str) -> dict[str, dict[str, float]]:
+        self.cursor.execute(f"SELECT DISTINCT position_asset FROM portfolio_positions WHERE position_client=(SELECT user_id FROM clients WHERE email=\"{email}\");")
+        company_codes = [str(code[0]) for code in self.cursor.fetchall()]
+        company_codes_literal = ",".join(company_codes)
+        self.cursor.execute(f"SELECT asset_code FROM assets WHERE asset_id IN ({company_codes_literal});")
+        companies = self.cursor.fetchall()
+
+        history = {}
+        for key, company in enumerate(companies):
+            self.cursor.execute(f"""SELECT position_date, position_value FROM portfolio_positions
+                                    WHERE position_asset={company_codes[key]} AND position_client=(SELECT user_id FROM clients WHERE email=\"{email}\");""")
+            results = self.cursor.fetchall()
+            history[company[0]] = {str(date): float(value) for date, value in results}
+
+        return history
 
     def insert_mockery_companies(self) -> None:
         self.cursor.execute("INSERT INTO assets (asset_name, asset_code) VALUES ('PETROBRAS', 'PETR4.SA');")
