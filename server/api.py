@@ -232,12 +232,12 @@ def update_company_history():
 # curl -i -X POST -H "Content-Type: application/json" http://localhost:5000/api/update-company-list
 # curl -i -X POST -H "Content-Type: application/json" http://localhost:5000/api/update-company-history
 # curl -i -X POST -H "Content-Type: application/json" -d '{"email":"josesousa1920@yahoo.com","password":"qadsklsad jkasd", "kindofuser": "manager"}' http://localhost:5000/api/login
-# curl -i X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzAxNywianRpIjoiNGFmNjVlMDYtNzE4Ny00OWQwLTgyYWQtMGMxODFmMDMxOTZjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2Mjk3MDE3LCJjc3JmIjoiYzNmNjI2OTEtOWIyOC00NGQ5LWE5Y2YtZWI2MjJkM2IwYmY5IiwiZXhwIjoxNzA2Mjk3OTE3fQ.8WcqKygJDGn9UE1y0kCjg3vzg1umBdVf3gLsTGNpsic" -d '{"email":"joao.silva@gmail.com","cash":50.25}' http://localhost:5000/api/update-client-cash
+# curl -i X POST -H "Content-Type: application/json" -H "Authorization: Bearer token" -d '{"email":"joao.silva@gmail.com","cash":50.25}' http://localhost:5000/api/update-client-cash
 # curl -i -X POST -H "Content-Type: application/json" -d '{"email":"joao.silva@gmail.com","password":"qads", "kindofuser": "client"}' http://localhost:5000/api/login
-# curl -i -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8" -d '{"code":"PETR4.SA","quantity":0.5}' http://localhost:5000/api/buy-stocks
-# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8"
-# curl -i -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8" -d '{"code":"PETR4.SA","quantity":0.2}' http://localhost:5000/api/sell-stocks
-# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjI5NzA0MSwianRpIjoiYTRlYWJkODQtNTVhYy00NmJlLTliYzMtM2MyN2RlZGRiOTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImpvYW8uc2lsdmFAZ21haWwuY29tIiwibmJmIjoxNzA2Mjk3MDQxLCJjc3JmIjoiODUyZjY4OTYtNmE1YS00OWVlLWIxOWYtMzcyMGEyNjc0M2I4IiwiZXhwIjoxNzA2Mjk3OTQxfQ.EM0wKrB0UcNNeZTGu-SZKuIP3wyFq9LKxmYc9NGAVQ8"
+# curl -i -X POST -H "Content-Type: application/json" -H "Authorization: Bearer token" -d '{"code":"PETR4.SA","quantity":0.5}' http://localhost:5000/api/buy-stocks
+# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer token"
+# curl -i -X POST -H "Content-Type: application/json" -H "Authorization: Bearer token" -d '{"code":"PETR4.SA","quantity":0.2}' http://localhost:5000/api/sell-stocks
+# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer token"
 def buy_stocks():
     client_email = get_jwt_identity()
     company_code = request.json.get("code")
@@ -303,7 +303,7 @@ def sell_stocks():
 
 @app.route("/api/get-client-position", methods=["GET"])
 @jwt_required()
-# curl -i X GET "http://localhost:5000/api/get-client-position" -H "Content-Type: application/json"
+# curl -i X GET "http://localhost:5000/api/get-client-position" -H "Content-Type: application/json" -H "Authorization: Bearer token"
 def get_client_position():
     client_email = get_jwt_identity()
     with Database(**config) as db:
