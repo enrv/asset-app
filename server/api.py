@@ -302,9 +302,10 @@ def sell_stocks():
             return {"message": str(e)}, 400
 
 @app.route("/api/get-client-position", methods=["GET"])
+@jwt_required()
 # curl -i X GET "http://localhost:5000/api/get-client-position" -H "Content-Type: application/json"
 def get_client_position():
-    client_email = "joao.silva@gmail.com"
+    client_email = get_jwt_identity()
     with Database(**config) as db:
         try:
             if not db.does_client_exist(client_email):
