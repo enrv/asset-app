@@ -189,12 +189,7 @@ class Database:
 
     def get_last_price_insertion_date(self, code: str) -> str:
         self.cursor.execute(f"SELECT MAX(price_date) FROM prices_time_series WHERE asset_id=(SELECT asset_id FROM assets WHERE asset_code=\"{code}\");")
-        result = self.cursor.fetchone()
-
-        if result is None or result[0] is None:
-            raise MissingAssetException(f"Asset with code {code} does not exist")
-        
-        return result[0]
+        return self.cursor.fetchone()
 
     def find_manager(self, email: str, password: str) -> Tuple[str, str]:
         self.cursor.execute(f"SELECT first_name, last_name FROM managers WHERE email=\"{email}\" AND user_password=\"{password}\";")
@@ -223,7 +218,12 @@ class Database:
         self.cursor.execute(f"SELECT user_id FROM clients WHERE email=\"{email}\";")
         result = self.cursor.fetchone()
         return result is not None and result[0] is not None
-    
+
+    def does_company_exist(self, code: str) -> bool:
+        self.cursor.execute(f"SELECT asset_id FROM assets WHERE asset_code=\"{code}\";")
+        result = self.cursor.fetchone()
+        return result is not None and result[0] is not None
+
     def get_client_cash(self, email: str) -> float:
         self.cursor.execute(f"SELECT cash_value FROM cash_positions WHERE cash_client=(SELECT user_id FROM clients WHERE email=\"{email}\");")
         result = self.cursor.fetchone()
@@ -244,6 +244,18 @@ class Database:
         all_but = lambda row, i: row[:i] + row[i+1:]
 
         return [dict(zip(names, all_but(list(row), i))) for row in rows]
+
+    def get_all_companies(self) -> list[dict[str, Any]]:
+        self.cursor.execute("SELECT * FROM assets;")
+        rows = self.cursor.fetchall()
+        names = list(self.cursor.column_names)
+
+        return [dict(zip(names, row)) for row in rows]
+
+    def get_company_history(self, code: str) -> list[dict[str, float]]:
+        self.cursor.execute(f"SELECT * FROM prices_time_series WHERE asset_id=(SELECT asset_id FROM assets WHERE asset_code=\"{code}\");")
+        results = self.cursor.fetchall()
+        return [{"date": str(date), "price": float(value)} for date, value, _ in results]
 
     def insert_mockery_companies(self) -> None:
         self.cursor.execute("INSERT INTO assets (asset_name, asset_code) VALUES ('PETROBRAS', 'PETR4.SA');")

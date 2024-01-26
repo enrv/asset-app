@@ -1,9 +1,11 @@
 from flask import Flask
 from standalone.database import Database, UnregisteredUserOrWrongPasswordException
+from standalone.scraping import fetch_companies, get_historical_prices
 from hashlib import sha256
 from flask import request
 import os
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from datetime import timedelta
 
 app = Flask(__name__)
 
@@ -29,6 +31,8 @@ with app.app_context():
 def hello():
     email = get_jwt_identity()
     return {"message": f"Hello, World! Nice to see you, {email}"}
+
+#### AUTH FUNCTIONS
 
 @app.route("/api/login", methods=["POST"])
 # curl -i -X POST -H "Content-Type: application/json" -d '{"email":"joao.silva@gmail.com","password":"qads", "kindofuser": "client"}' http://localhost:5000/api/login
@@ -90,9 +94,11 @@ def register():
         except Exception as e:
             return {"message": str(e)}, 400
 
+#### MANAGER FUNCTIONS
+
 @app.route("/api/get-clients", methods=["GET"])
 @jwt_required()
-# curl -i X GET -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjIyMDg0OCwianRpIjoiZDhiMzBjYWItYzU4NC00YjQxLTk0N2EtOGRjZTVmODBjYmEzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2MjIwODQ4LCJjc3JmIjoiZmQyMzFiNDQtYzdjMC00NzIwLWJmMzctMmE5MTAxMjliMjA1IiwiZXhwIjoxNzA2MjIxNzQ4fQ.nsZ9AQD14p65pEJhQ-BF8IYFKgRcac77RbdcgmEgwUI" http://localhost:5000/api/get-clients
+# curl -i X GET -H "Content-Type: application/json" -H "Authorization: Bearer token" http://localhost:5000/api/get-clients
 def get_clients():
     manager_email = get_jwt_identity()
     
@@ -107,7 +113,7 @@ def get_clients():
 
 @app.route("/api/get-client-cash", methods=["GET"])
 @jwt_required()
-# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjIyMDg0OCwianRpIjoiZDhiMzBjYWItYzU4NC00YjQxLTk0N2EtOGRjZTVmODBjYmEzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2MjIwODQ4LCJjc3JmIjoiZmQyMzFiNDQtYzdjMC00NzIwLWJmMzctMmE5MTAxMjliMjA1IiwiZXhwIjoxNzA2MjIxNzQ4fQ.nsZ9AQD14p65pEJhQ-BF8IYFKgRcac77RbdcgmEgwUI"
+# curl -i X GET "http://localhost:5000/api/get-client-cash?email=joao.silva@gmail.com" -H "Content-Type: application/json" -H "Authorization: Bearer token"
 def get_client_cash():
     manager_email = get_jwt_identity()
     client_email = request.args.get("email")
@@ -130,7 +136,7 @@ def get_client_cash():
 
 @app.route("/api/update-client-cash", methods=["POST"])
 @jwt_required()
-# curl -i X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNjIyMDg0OCwianRpIjoiZDhiMzBjYWItYzU4NC00YjQxLTk0N2EtOGRjZTVmODBjYmEzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impvc2Vzb3VzYTE5MjBAeWFob28uY29tIiwibmJmIjoxNzA2MjIwODQ4LCJjc3JmIjoiZmQyMzFiNDQtYzdjMC00NzIwLWJmMzctMmE5MTAxMjliMjA1IiwiZXhwIjoxNzA2MjIxNzQ4fQ.nsZ9AQD14p65pEJhQ-BF8IYFKgRcac77RbdcgmEgwUI" -d '{"email":"joao.silva@gmail.com","cash":50.25}' http://localhost:5000/api/update-client-cash
+# curl -i X POST -H "Content-Type: application/json" -H "Authorization: Bearer token" -d '{"email":"joao.silva@gmail.com","cash":50.25}' http://localhost:5000/api/update-client-cash
 def update_client_cash():
     manager_email = get_jwt_identity()
     client_email = request.json.get("email")
@@ -151,6 +157,73 @@ def update_client_cash():
             return {"message": "Cash updated successfully!"}
         except Exception as e:
             return {"message": str(e)}, 400
+
+#### GENERAL FUNCTIONS
+
+@app.route("/api/get-all-companies", methods=["GET"])
+# curl -i -X GET -H "Content-Type: application/json" http://localhost:5000/api/get-all-companies
+def get_all_companies():
+    with Database(**config) as db:
+        try:
+            companies = db.get_all_companies()
+            return {"companies": companies}
+        except Exception as e:
+            return {"message": str(e)}, 400
+        
+@app.route("/api/get-company-history", methods=["GET"])
+# curl -i -X GET "http://localhost:5000/api/get-company-history?name=PETR4.SA" -H "Content-Type: application/json"
+def get_company_history():
+    company_name = request.args.get("name")
+
+    if company_name is None:
+        return {"message": "Missing parameters!"}, 400
+    
+    with Database(**config) as db:
+        try:
+            if not db.does_company_exist(company_name):
+                return {"message": "Company not found!"}, 400
+
+            history = db.get_company_history(company_name)
+            return {"prices": history}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
+@app.route("/api/update-company-list", methods=["POST"])
+# curl -i -X POST -H "Content-Type: application/json" http://localhost:5000/api/update-company-list
+def update_company_list():
+    with Database(**config) as db:
+        try:
+            companies = fetch_companies()
+            for company in companies:
+                db.insert_company(company["name"], company["code"])
+            return {"message": "Company list updated successfully!"}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
+@app.route("/api/update-company-history", methods=["POST"])
+# curl -i -X POST -H "Content-Type: application/json" http://localhost:5000/api/update-company-history
+def update_company_history():
+    with Database(**config) as db:
+        try:
+            companies = db.get_all_companies()
+            codes = [company["asset_code"] for company in companies]
+
+            for code in codes:
+                last_inserted = db.get_last_price_insertion_date(code)
+                if last_inserted[0] is not None:
+                    start_from = last_inserted[0] + timedelta(days=1)
+                else:
+                    start_from = None
+
+                prices = get_historical_prices(code, from_date=start_from)
+                for date_series, price in prices.items():
+                    db.insert_price(date_series.strftime("%Y-%m-%d"), price, code)
+
+            return {"message": "Company history updated successfully!"}
+        except Exception as e:
+            return {"message": str(e)}, 400
+
+#### CLIENT FUNCTIONS
 
 if __name__ == "__main__":
     app.run()
