@@ -63,7 +63,7 @@ def login():
         try:
             first_name, last_name = db_search(db, email, encrypted_password)
             access_token = create_access_token(identity=email)
-            return {"message": f"Welcome {first_name} {last_name}", "access_token": access_token}
+            return {"message": "Welcome!", "first_name": first_name, "last_name": last_name, "access_token": access_token}
         except UnregisteredUserOrWrongPasswordException as e:
             return {"message": str(e)}, 401
 
