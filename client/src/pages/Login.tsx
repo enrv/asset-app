@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react"
+import { useAuth } from "../hooks/useAuth"
+import { Navigate } from "react-router-dom"
 
 function Login() {
     useEffect(() => {
@@ -9,6 +11,12 @@ function Login() {
     const [ email, setEmail ] = useState("")
     const [ password, setPassword ] = useState("")
     const [ loginHasFailed, setLoginHasFailed ] = useState(false)
+
+    const { login, user } = useAuth()
+
+    if (user) {
+        return <Navigate to="/" />
+    }
 
     const submitLogin = (e) => {
         const requestInfo = {
@@ -28,16 +36,16 @@ function Login() {
                 if (response.status == 200) {
                     return response.json()
                 }
+                throw new Error("User or password incorrect")
             })
             .then(data => {
-                setLoginHasFailed(false)
-                localStorage.setItem("access_token", data.access_token)
-                localStorage.setItem("user_info", JSON.stringify({
+                login({
+                    "token": data.access_token,
                     "kindofuser": userType,
                     "email": email,
                     "first_name": data.first_name,
                     "last_name": data.last_name
-                }))
+                })
             })
             .catch(error => {
                 setLoginHasFailed(true)
@@ -55,7 +63,7 @@ function Login() {
                     <p>User or password incorrect</p>
                 </div>
             }
-            <form id="login">
+            <form onSubmit={submitLogin}>
                 <div>
                     <label>
                         <input type="radio" id="client" value="client" checked={userType == "client"} onChange={() => setUserType("client")} />
@@ -73,7 +81,7 @@ function Login() {
                     <input type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)} />
                 </div>
                 <div>
-                    <button onClick={submitLogin}>Login</button>
+                    <button>Login</button>
                 </div>
             </form>
         </div>

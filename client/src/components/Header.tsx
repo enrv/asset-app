@@ -1,9 +1,9 @@
-function Header() {
-    const token = localStorage.getItem("access_token")
-    const userInfo = localStorage.getItem("user_info")
+import { useAuth } from "../hooks/useAuth"
 
-    if (token && userInfo) {
-        const user = JSON.parse(userInfo)
+function Header() {
+    const { user } = useAuth()
+
+    if (user) {
         return (
             <div>
                 <h1>Minha Asset</h1>

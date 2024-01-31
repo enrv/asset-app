@@ -1,14 +1,11 @@
 import Routing from "./Routing"
-import Header from "./components/Header"
-import Footer from "./components/Footer"
+import { BrowserRouter } from "react-router-dom"
 
 function App() {
   return (
-    <div>
-      <Header />
+    <BrowserRouter>
       <Routing />
-      <Footer />
-    </div>
+    </BrowserRouter>
   )
 }
 

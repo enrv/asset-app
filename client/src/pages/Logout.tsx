@@ -1,13 +1,14 @@
 import { useEffect } from "react"
 import { Navigate } from "react-router-dom"
+import { useAuth } from "../hooks/useAuth"
 
 function Logout() {
     useEffect(() => {
         document.title += " | Logout"
     }, [])
 
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("user_info")
+    const { logout } = useAuth()
+    logout()
 
     return <Navigate to="/" />
 }
