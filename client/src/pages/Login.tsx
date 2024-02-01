@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "../hooks/useAuth"
-import { Navigate } from "react-router-dom"
 
 function Login() {
     useEffect(() => {
@@ -12,11 +11,7 @@ function Login() {
     const [ password, setPassword ] = useState("")
     const [ loginHasFailed, setLoginHasFailed ] = useState(false)
 
-    const { login, user } = useAuth()
-
-    if (user) {
-        return <Navigate to="/" />
-    }
+    const { login } = useAuth()
 
     const submitLogin = (e) => {
         const requestInfo = {

@@ -1,11 +1,10 @@
 import {
-    BrowserRouter,
     Routes,
     Route
 } from "react-router-dom"
 
 import { AuthProvider } from "./hooks/useAuth"
-import { ProtectedRoute } from "./components/ProtectedRoute"
+import { ProtectedRoute, ProtectionType } from "./components/ProtectedRoute"
 
 import Header from "./components/Header"
 import Footer from "./components/Footer"
@@ -25,11 +24,11 @@ function Routing() {
             <Header />
             <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/logout" element={<Logout />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
-                <Route path="/manager" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
+                <Route path="/login" element={<ProtectedRoute type={ProtectionType.NotLoggedIn}><Login /></ProtectedRoute>} />
+                <Route path="/logout" element={<ProtectedRoute type={ProtectionType.ClientOrManager}><Logout /></ProtectedRoute>} />
+                <Route path="/register" element={<ProtectedRoute type={ProtectionType.NotLoggedIn}><Register /></ProtectedRoute>} />
+                <Route path="/client" element={<ProtectedRoute type={ProtectionType.ClientOnly}><ClientDashboard /></ProtectedRoute>} />
+                <Route path="/manager" element={<ProtectedRoute type={ProtectionType.ManagerOnly}><ManagerDashboard /></ProtectedRoute>} />
                 <Route path="/companies" element={<Companies />} />
                 <Route path="/companies/:code" element={<Companies />} />
                 <Route path="*" element={<NotFound />} />
