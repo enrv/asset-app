@@ -1,0 +1,78 @@
+{
+    "header": {
+        "loginButton": "Entrar",
+        "registerButton": "Criar uma conta",
+        "logoutButton": "Sair",
+        "welcomeMessage": "Olá, $username!"
+    },
+    "footer": {
+        "message": "$year - Minha Asset - $time (Horário de Brasília)"
+    },
+    "sidebar": {
+        "home": "Início",
+        "dashboard": "Painel",
+        "companies": "Companhias"
+    },
+    "login": {
+        "pageTitle": "Login",
+        "pageBrowserTitle": "Login",
+        "clientTrigger": "Cliente",
+        "managerTrigger": "Gestor",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Senha",
+        "loginButton": "Entrar",
+        "validMailMessage": "Por favor, insira um email válido",
+        "shortPasswordMessage": "A senha deve ter no mínimo 4 caracteres",
+        "loginHasFailedTitle": "Ops!",
+        "loginHasFailedMessage": "O login falhou. Por favor, verifique seu email e senha e tente novamente."
+    },
+    "register": {
+        "pageTitle": "Cadastro",
+        "pageBrowserTitle": "Cadastro",
+        "clientTrigger": "Cliente",
+        "managerTrigger": "Gestor",
+        "firstNamePlaceholder": "Nome",
+        "lastNamePlaceholder": "Sobrenome",
+        "zipCodePlaceholder": "CEP",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Senha",
+        "confirmPasswordPlaceholder": "Confirmar Senha",
+        "registerButton": "Registrar",
+        "shortFirstNameMessage": "O nome deve ter no mínimo 2 caracteres",
+        "shortLastNameMessage": "O sobrenome deve ter no mínimo 2 caracteres",
+        "validMailMessage": "Por favor, insira um email válido",
+        "shortPasswordMessage": "A senha deve ter no mínimo 4 caracteres",
+        "passwordsDontMatchMessage": "As senhas não conferem",
+        "zipCodeInvalid": "CEP inválido",
+        "registerHasFailedTitle": "Ops!",
+        "registerHasFailedMessage": "O registro falhou. Por favor, tente novamente.",
+        "registerHasSucceededTitle": "Sucesso!",
+        "registerHasSucceededMessage": "Registro efetuado com sucesso. Você já pode fazer login."
+    },
+    "home": {
+        "pageTitle": "Início",
+        "pageBrowserTitle": "Início"
+    },
+    "clientDashboard": {
+        "pageTitle": "Painel",
+        "pageBrowserTitle": "Painel"
+    },
+    "managerDashboard": {
+        "pageTitle": "Painel",
+        "pageBrowserTitle": "Painel"
+    },
+    "companies": {
+        "pageTitle": "Companhias",
+        "pageBrowserTitle": "Companhias"
+    },
+    "company": {
+        "pageTitle": "Companhia $company",
+        "pageBrowserTitle": "Companhia $company"
+    },
+    "notFound": {
+        "pageTitle": "Não Encontrado",
+        "pageBrowserTitle": "Não Encontrado",
+        "message": "A página que você procura não existe."
+    }
+
+}

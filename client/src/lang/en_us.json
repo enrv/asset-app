@@ -1,0 +1,77 @@
+{
+    "header": {
+        "loginButton": "Login",
+        "registerButton": "Register",
+        "logoutButton": "Logout",
+        "welcomeMessage": "Welcome, $username!"
+    },
+    "footer": {
+        "message": "$year - Minha Asset - $time (Brasilia Time)"
+    },
+    "sidebar": {
+        "home": "Home",
+        "dashboard": "Dashboard",
+        "companies": "Companies"
+    },
+    "login": {
+        "pageTitle": "Login",
+        "pageBrowserTitle": "Login",
+        "clientTrigger": "Client",
+        "managerTrigger": "Manager",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Password",
+        "loginButton": "Login",
+        "validMailMessage": "Please enter a valid email address",
+        "shortPasswordMessage": "Password must be at least 4 characters long",
+        "loginHasFailedTitle": "Ops!",
+        "loginHasFailedMessage": "Login has failed. Please check your email and password and try again."
+    },
+    "register": {
+        "pageTitle": "Register",
+        "pageBrowserTitle": "Register",
+        "clientTrigger": "Client",
+        "managerTrigger": "Manager",
+        "firstNamePlaceholder": "First Name",
+        "lastNamePlaceholder": "Last Name",
+        "zipCodePlaceholder": "Zip Code",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Password",
+        "confirmPasswordPlaceholder": "Confirm Password",
+        "registerButton": "Register",
+        "shortFirstNameMessage": "First Name must be at least 2 characters long",
+        "shortLastNameMessage": "Last Name must be at least 2 characters long",
+        "validMailMessage": "Please enter a valid email address",
+        "shortPasswordMessage": "Password must be at least 4 characters long",
+        "passwordsDontMatchMessage": "Passwords don't match",
+        "zipCodeInvalid": "Invalid Zip Code",
+        "registerHasFailedTitle": "Failure!",
+        "registerHasFailedMessage": "Register has failed. Please try again.",
+        "registerHasSucceededTitle": "Success!",
+        "registerHasSucceededMessage": "Register has succeeded. You can now login."
+    },
+    "home": {
+        "pageTitle": "Home",
+        "pageBrowserTitle": "Home"
+    },
+    "clientDashboard": {
+        "pageTitle": "Dashboard",
+        "pageBrowserTitle": "Dashboard"
+    },
+    "managerDashboard": {
+        "pageTitle": "Dashboard",
+        "pageBrowserTitle": "Dashboard"
+    },
+    "companies": {
+        "pageTitle": "Companies",
+        "pageBrowserTitle": "Companies"
+    },
+    "company": {
+        "pageTitle": "Company $company",
+        "pageBrowserTitle": "Company $company"
+    },
+    "notFound": {
+        "pageTitle": "Not Found",
+        "pageBrowserTitle": "Not Found",
+        "message": "The page you are looking for does not exist."
+    }
+}

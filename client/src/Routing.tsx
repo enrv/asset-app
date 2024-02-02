@@ -5,6 +5,7 @@ import {
 
 import { AuthProvider } from "./hooks/useAuth"
 import { ProtectedRoute, ProtectionType } from "./components/ProtectedRoute"
+import { LangProvider } from "./hooks/useLang"
 
 import Header from "./components/Header"
 import Footer from "./components/Footer"
@@ -22,6 +23,7 @@ import NotFound from "./pages/NotFound"
 function Routing() {
     return (
         <AuthProvider>
+        <LangProvider>
             <div className="flex flex-col h-screen justify-between mx-20">
                 <Header />
                 <div className="flex">
@@ -44,6 +46,7 @@ function Routing() {
                 </div>
                 <Footer />
             </div>
+        </LangProvider>
         </AuthProvider>
     )
 }

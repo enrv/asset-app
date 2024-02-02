@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
+import { useLang } from "../hooks/useLang"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,13 +13,15 @@ import {
 } from "@/components/ui/card"
 
 function Companies() {
+    const { getMessages } = useLang()
+
     let params = useParams()
 
     useEffect(() => {
         if (params.code) {
-            document.title += " | Company " + params.code
+            document.title += " | " + getMessages().company.pageTitle.replace("$company", params.code)
         } else {
-            document.title += " | Companies"
+            document.title += " | " + getMessages().companies.pageTitle
         }
     }, [])
 
@@ -29,7 +32,7 @@ function Companies() {
         }
         return (
             <div>
-                <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">Company {params.code}</h2>
+                <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">{getMessages().company.pageTitle.replace("$company", params.code)}</h2>
                 <ul>{listOfPrices}</ul>
             </div>
         )
@@ -56,7 +59,7 @@ function Companies() {
         })
         return (
             <div>
-                <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">Companies</h2>
+                <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">{getMessages().companies.pageTitle}</h2>
                 <div className="grid grid-cols-8 gap-10">{listOfCompanies}</div>
             </div>
         )

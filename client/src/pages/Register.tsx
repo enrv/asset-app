@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useLang } from "../hooks/useLang"
 
 import {
     Alert,
@@ -24,30 +25,38 @@ import {
 import { Input } from "@/components/ui/input"
 
 function Register() {
+    const { getMessages } = useLang()
+
     useEffect(() => {
-        document.title += " | Register"
+        document.title += " | " + getMessages().register.pageBrowserTitle
     }, [])
 
     const [ registerHasFailed, setRegisterHasFailed ] = useState(false)
     const [ ableToLogin, setAbleToLogin ] = useState(false)
 
     const formSchema = z.object({
-        firstName: z.string().min(2, {message: "Name too short"}),
-        lastName: z.string().min(2, {message: "Last name too short"}),
-        email: z.string().email({message: "Please enter valid email"}),
-        password: z.string().min(4, {message: "Password too short"}),
-        passwordConfirm: z.string().min(4, {message: "Password too short"}),
-        zipCode: z.string().refine(v => /^\d{8}$/.test(v), {message: "Please enter valid zip code"}),
+        firstName: z.string().min(2, {message: getMessages().register.shortFirstNameMessage}),
+        lastName: z.string().min(2, {message: getMessages().register.shortLastNameMessage}),
+        email: z.string().email({message: getMessages().register.validMailMessage}),
+        password: z.string().min(4, {message: getMessages().register.shortPasswordMessage}),
+        passwordConfirm: z.string().min(4, {message: getMessages().register.shortPasswordMessage}),
+        zipCode: z.string().refine(v => /^\d{8}$/.test(v), {message: getMessages().register.zipCodeInvalid}),
         kindofuser: z.enum(["client", "manager"])
     }).refine(data => data.password === data.passwordConfirm, {
-        message: "Passwords do not match",
+        message: getMessages().register.passwordsDontMatchMessage,
         path: ["passwordConfirm"],
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-          kindofuser: "client"
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
+            passwordConfirm: "",
+            zipCode: "",
+            kindofuser: "client"
         },
     })
 
@@ -87,30 +96,30 @@ function Register() {
 
     return (
         <div>
-            <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">Register</h2>
+            <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">{getMessages().register.pageTitle}</h2>
             {registerHasFailed &&
                 <Alert>
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 4.63601C5 3.76031 5.24219 3.1054 5.64323 2.67357C6.03934 2.24705 6.64582 1.9783 7.5014 1.9783C8.35745 1.9783 8.96306 2.24652 9.35823 2.67208C9.75838 3.10299 10 3.75708 10 4.63325V5.99999H5V4.63601ZM4 5.99999V4.63601C4 3.58148 4.29339 2.65754 4.91049 1.99307C5.53252 1.32329 6.42675 0.978302 7.5014 0.978302C8.57583 0.978302 9.46952 1.32233 10.091 1.99162C10.7076 2.65557 11 3.57896 11 4.63325V5.99999H12C12.5523 5.99999 13 6.44771 13 6.99999V13C13 13.5523 12.5523 14 12 14H3C2.44772 14 2 13.5523 2 13V6.99999C2 6.44771 2.44772 5.99999 3 5.99999H4ZM3 6.99999H12V13H3V6.99999Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-                    <AlertTitle>Failure!</AlertTitle>
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    <AlertTitle>{getMessages().register.registerHasFailedTitle}</AlertTitle>
                     <AlertDescription>
-                    User not registered. Please try again
+                    {getMessages().register.registerHasFailedMessage}
                     </AlertDescription>
                 </Alert>
             }
             {ableToLogin &&
                 <Alert>
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 4.63601C5 3.76031 5.24219 3.1054 5.64323 2.67357C6.03934 2.24705 6.64582 1.9783 7.5014 1.9783C8.35745 1.9783 8.96306 2.24652 9.35823 2.67208C9.75838 3.10299 10 3.75708 10 4.63325V5.99999H5V4.63601ZM4 5.99999V4.63601C4 3.58148 4.29339 2.65754 4.91049 1.99307C5.53252 1.32329 6.42675 0.978302 7.5014 0.978302C8.57583 0.978302 9.46952 1.32233 10.091 1.99162C10.7076 2.65557 11 3.57896 11 4.63325V5.99999H12C12.5523 5.99999 13 6.44771 13 6.99999V13C13 13.5523 12.5523 14 12 14H3C2.44772 14 2 13.5523 2 13V6.99999C2 6.44771 2.44772 5.99999 3 5.99999H4ZM3 6.99999H12V13H3V6.99999Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-                    <AlertTitle>Success!</AlertTitle>
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    <AlertTitle>{getMessages().register.registerHasSucceededTitle}</AlertTitle>
                     <AlertDescription>
-                    User registered. Please login
+                    {getMessages().register.registerHasSucceededMessage}
                     </AlertDescription>
                 </Alert>
             }
 
             <Tabs defaultValue="client" className="w-[400px] pb-10 pt-10" onValueChange={(t) => form.setValue("kindofuser", t)}>
             <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="client">Client</TabsTrigger>
-                <TabsTrigger value="manager">Manager</TabsTrigger>
+                <TabsTrigger value="client">{getMessages().register.clientTrigger}</TabsTrigger>
+                <TabsTrigger value="manager">{getMessages().register.managerTrigger}</TabsTrigger>
             </TabsList>
             </Tabs>
 
@@ -122,7 +131,7 @@ function Register() {
                 render={({ field }) => (
                     <FormItem>
                     <FormControl>
-                        <Input placeholder="First Name" {...field} />
+                        <Input placeholder={getMessages().register.firstNamePlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -134,7 +143,7 @@ function Register() {
                 render={({ field }) => (
                     <FormItem>
                     <FormControl>
-                        <Input placeholder="Last Name" {...field} />
+                        <Input placeholder={getMessages().register.lastNamePlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -146,7 +155,7 @@ function Register() {
                 render={({ field }) => (
                     <FormItem>
                     <FormControl>
-                        <Input placeholder="Zip Code" {...field} />
+                        <Input placeholder={getMessages().register.zipCodePlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -158,7 +167,7 @@ function Register() {
                 render={({ field }) => (
                     <FormItem>
                     <FormControl>
-                        <Input placeholder="Email" {...field} />
+                        <Input placeholder={getMessages().register.emailPlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -170,7 +179,7 @@ function Register() {
                 render={({ field }) => (
                     <FormItem>
                     <FormControl>
-                        <Input type="password" placeholder="Password" {...field} />
+                        <Input type="password" placeholder={getMessages().register.passwordPlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -182,13 +191,13 @@ function Register() {
                 render={({ field }) => (
                     <FormItem>
                     <FormControl>
-                        <Input type="password" placeholder="Confirm Password" {...field} />
+                        <Input type="password" placeholder={getMessages().register.confirmPasswordPlaceholder} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
                 )}
                 />
-                <Button type="submit">Register</Button>
+                <Button type="submit">{getMessages().register.registerButton}</Button>
             </form>
             </Form>
         </div>

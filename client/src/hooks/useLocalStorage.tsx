@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { UserInfo } from './useAuth'
 
-const useLocalStorage = (key: string, initial: UserInfo) => {
+const useLocalStorage = (key: string, initial) => {
     const get = () => {
         const storage = localStorage.getItem(key)
         if (storage) {
@@ -13,7 +12,7 @@ const useLocalStorage = (key: string, initial: UserInfo) => {
 
     const [value, setValue] = useState(get());
 
-    const set = (newValue: UserInfo) => {
+    const set = (newValue) => {
         localStorage.setItem(key, JSON.stringify(newValue))
         setValue(newValue)
     }

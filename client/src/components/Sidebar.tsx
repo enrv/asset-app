@@ -1,7 +1,9 @@
 import { useAuth } from "../hooks/useAuth"
+import { useLang } from "../hooks/useLang"
 
 function Sidebar() {
     const { user } = useAuth()
+    const { getMessages } = useLang()
 
     let dashboardUrl = ""
     if (user) {
@@ -17,7 +19,7 @@ function Sidebar() {
                         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                         <polyline points="9 22 9 12 15 12 15 22" />
                         </svg>
-                        <span class="ml-3 flex-1 whitespace-nowrap">Início</span>
+                        <span class="ml-3 flex-1 whitespace-nowrap">{getMessages().sidebar.home}</span>
                     </a>
                     </li>
                     {user && (
@@ -29,7 +31,7 @@ function Sidebar() {
                         <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
-                        <span class="ml-3 flex-1 whitespace-nowrap">Painel</span>
+                        <span class="ml-3 flex-1 whitespace-nowrap">{getMessages().sidebar.dashboard}</span>
                     </a>
                     </li>
                     )}
@@ -41,7 +43,7 @@ function Sidebar() {
                         <polyline points="3.29 7 12 12 20.71 7" />
                         <line x1="12" x2="12" y1="22" y2="12" />
                         </svg>
-                        <span class="ml-3 flex-1 whitespace-nowrap">Companhias</span>
+                        <span class="ml-3 flex-1 whitespace-nowrap">{getMessages().sidebar.companies}</span>
                     </a>
                     </li>
                 </ul>

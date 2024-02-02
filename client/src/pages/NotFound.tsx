@@ -1,12 +1,18 @@
 import { useEffect } from "react"
+import { useLang } from "../hooks/useLang"
 
 function NotFound() {
+    const { getMessages } = useLang()
+
     useEffect(() => {
-        document.title += " | Page Not Found"
+        document.title += " | " + getMessages().notFound.pageBrowserTitle
     }, [])
 
     return (
-        <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">Page not found</h2>
+        <div>
+            <h2 className="scroll-m-20 pb-10 text-3xl font-semibold tracking-tight first:mt-0">{getMessages().notFound.pageBrowserTitle}</h2>
+            <p>{getMessages().notFound.message}</p>
+        </div>
     )
 }
 
