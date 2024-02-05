@@ -18,6 +18,7 @@ import Register from "./pages/Register"
 import ClientDashboard from "./pages/ClientDashboard"
 import ManagerDashboard from "./pages/ManagerDashboard"
 import Companies from "./pages/Companies"
+import Company from "./pages/Company"
 import NotFound from "./pages/NotFound"
 
 function Routing() {
@@ -39,7 +40,7 @@ function Routing() {
                         <Route path="/client" element={<ProtectedRoute type={ProtectionType.ClientOnly}><ClientDashboard /></ProtectedRoute>} />
                         <Route path="/manager" element={<ProtectedRoute type={ProtectionType.ManagerOnly}><ManagerDashboard /></ProtectedRoute>} />
                         <Route path="/companies" element={<Companies />} />
-                        <Route path="/companies/:code" element={<Companies />} />
+                        <Route path="/companies/:code" element={<Company />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </main>
